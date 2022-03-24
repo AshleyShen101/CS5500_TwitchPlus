@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "items")
@@ -43,7 +45,10 @@ public class Item implements Serializable {
     @Enumerated(value = EnumType.STRING)
     @JsonProperty("item_type")
     @Column(name = "item_type")
-    private ItemType type;
+    private ItemType itemType;
+
+    @ManyToMany(mappedBy = "itemSet")
+    private Set<User> userSet = new HashSet<>();
 
     public String getId() {
         return id;
@@ -93,11 +98,19 @@ public class Item implements Serializable {
         this.broadcasterName = broadcasterName;
     }
 
-    public ItemType getType() {
-        return type;
+    public ItemType getItemType() {
+        return itemType;
     }
 
-    public void setType(ItemType itemType) {
-        this.type = itemType;
+    public void setItemType(ItemType itemType) {
+        this.itemType = itemType;
+    }
+
+    public Set<User> getUserSet() {
+        return userSet;
+    }
+
+    public void setUserSet(Set<User> userSet) {
+        this.userSet = userSet;
     }
 }
