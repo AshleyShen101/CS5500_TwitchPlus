@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 @Controller
 public class GameController {
@@ -26,7 +27,7 @@ public class GameController {
     public void getGame(@RequestParam(value = "game_name", required = false) String gameName, HttpServletResponse response) throws IOException, ServletException {
         response.setContentType("application/json;charset=UTF-8");
         try {
-            if (gameName != null) {
+            if (Objects.nonNull(gameName)) {
                 response.getWriter().print(new ObjectMapper().writeValueAsString(gameService.searchGame(gameName)));
             } else {
                 response.getWriter().print(new ObjectMapper().writeValueAsString(gameService.topGames(0)));
