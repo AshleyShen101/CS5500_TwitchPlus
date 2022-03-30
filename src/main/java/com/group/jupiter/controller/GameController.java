@@ -23,7 +23,7 @@ public class GameController {
     }
 
     @RequestMapping(value = "/game", method = RequestMethod.GET)
-    public void getGame(@RequestParam(value = "/game_name", required = false) String gameName, HttpServletResponse response) throws IOException, ServletException {
+    public void getGame(@RequestParam(value = "game_name", required = false) String gameName, HttpServletResponse response) throws IOException, ServletException {
         response.setContentType("application/json;charset=UTF-8");
         try {
             if (gameName != null) {
