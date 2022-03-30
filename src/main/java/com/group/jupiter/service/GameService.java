@@ -39,19 +39,22 @@ public class GameService {
         }
     }
 
-    private String searchTwitch(String url) {
+    private String searchTwitch(String url) throws TwitchException {
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         ResponseHandler<String> responseHandler = response -> {
             int responseCode = response.getStatusLine().getStatusCode();
+
             if (responseCode != 200) {
                 System.out.println("Response status: " + response.getStatusLine().getReasonPhrase());
                 throw new TwitchException("Failed to get result from Twitch API");
             }
+
             HttpEntity entity = response.getEntity();
             if (entity == null) {
-                throw new TwitchException("Failed to get result from Twitch API");
+                throw new TwitchException("Get null result from Twitch API");
             }
+
             JSONObject jsonObject = new JSONObject(EntityUtils.toString(entity));
             return jsonObject.getJSONArray("data").toString();
         };
@@ -87,11 +90,15 @@ public class GameService {
         if (limit <= 0) {
             limit = DEFAULT_GAME_LIMIT;
         }
-        return getGameList(searchTwitch(buildGameURL(TOP_GAME_URL, "", limit)));
+        String url = buildGameURL(TOP_GAME_URL, "", limit);
+        String data = searchTwitch(url);
+        return getGameList(data);
     }
 
     public Game searchGame(String gameName) throws TwitchException {
-        List<Game> gameList = getGameList(searchTwitch(buildGameURL(GAME_SEARCH_URL_TEMPLATE, gameName, 0)));
+        String url = buildGameURL(GAME_SEARCH_URL_TEMPLATE, gameName, 0);
+        String data = searchTwitch(url);
+        List<Game> gameList = getGameList(data);
         if (gameList.size() != 0) {
             return gameList.get(0);
         }
