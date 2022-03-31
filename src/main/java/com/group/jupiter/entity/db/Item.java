@@ -1,5 +1,6 @@
 package com.group.jupiter.entity.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,6 +48,7 @@ public class Item implements Serializable {
     @Column(name = "item_type")
     private ItemType itemType;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "itemSet")
     private Set<User> userSet = new HashSet<>();
 
