@@ -17,29 +17,18 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class GameService {
+
     private static final String TOKEN = "Bearer teadbf9bpm2ytui0jab2jn1r1476h8";
     private static final String CLIENT_ID = "1fti84dv468fu81df2zx46g21yb7kp";
     private static final String TOP_GAME_URL = "https://api.twitch.tv/helix/games/top?first=%s";
     private static final String GAME_SEARCH_URL_TEMPLATE = "https://api.twitch.tv/helix/games?name=%s";
     private static final int DEFAULT_GAME_LIMIT = 20;
 
-    private String buildGameURL(String url, String gameName, int limit) {
-        if (gameName.equals("")) {
-            return String.format(url, limit);
-        } else {
-            try {
-                gameName = URLEncoder.encode(gameName, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return String.format(url, gameName);
-        }
-    }
-
-    private String searchTwitch(String url) throws TwitchException {
+    protected String searchTwitch(String url) throws TwitchException {
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         ResponseHandler<String> responseHandler = response -> {
@@ -51,7 +40,7 @@ public class GameService {
             }
 
             HttpEntity entity = response.getEntity();
-            if (entity == null) {
+            if (Objects.isNull(entity)) {
                 throw new TwitchException("Get null result from Twitch API");
             }
 
@@ -73,6 +62,19 @@ public class GameService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private String buildGameURL(String url, String gameName, int limit) {
+        if (gameName.equals("")) {
+            return String.format(url, limit);
+        } else {
+            try {
+                gameName = URLEncoder.encode(gameName, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return String.format(url, gameName);
         }
     }
 

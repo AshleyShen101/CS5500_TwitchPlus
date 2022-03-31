@@ -4,24 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group.jupiter.entity.db.Item;
 import com.group.jupiter.entity.db.ItemType;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 
 @Service
 public class SearchService {
-    private static final String TOKEN = "Bearer teadbf9bpm2ytui0jab2jn1r1476h8";
-    private static final String CLIENT_ID = "1fti84dv468fu81df2zx46g21yb7kp";
 
     private static final String STREAM_SEARCH_URL_TEMPLATE = "https://api.twitch.tv/helix/streams?game_id=%s&first=%s";
     private static final String VIDEO_SEARCH_URL_TEMPLATE = "https://api.twitch.tv/helix/videos?game_id=%s&first=%s";
@@ -29,41 +20,11 @@ public class SearchService {
     private static final String TWITCH_BASE_URL = "https://www.twitch.tv/";
     private static final int DEFAULT_SEARCH_LIMIT = 20;
 
-    private String searchTwitch(String url) throws TwitchException {
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+    private final GameService gameService;
 
-        ResponseHandler<String> responseHandler = response -> {
-            int responseCode = response.getStatusLine().getStatusCode();
-
-            if (responseCode != 200) {
-                System.out.println("Response status: " + response.getStatusLine().getReasonPhrase());
-                throw new TwitchException("Failed to get result from Twitch API");
-            }
-
-            HttpEntity entity = response.getEntity();
-            if (entity == null) {
-                throw new TwitchException("Get null result from Twitch API");
-            }
-
-            JSONObject jsonObject = new JSONObject(EntityUtils.toString(entity));
-            return jsonObject.getJSONArray("data").toString();
-        };
-
-        try {
-            HttpGet request = new HttpGet(url);
-            request.setHeader("Authorization", TOKEN);
-            request.setHeader("Client-Id", CLIENT_ID);
-            return httpClient.execute(request, responseHandler);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new TwitchException("Failed to get result from Twitch API");
-        } finally {
-            try {
-                httpClient.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    @Autowired
+    public SearchService(GameService gameService) {
+        this.gameService = gameService;
     }
 
     // Similar to buildGameURL, build Search URL that will be used when calling Twitch API.
@@ -90,7 +51,7 @@ public class SearchService {
 
     private List<Item> searchStreams(String gameId, int limit) throws TwitchException {
         String url = buildSearchURL(STREAM_SEARCH_URL_TEMPLATE, gameId, limit);
-        String data = searchTwitch(url);
+        String data = gameService.searchTwitch(url);
         List<Item> streams = getItemList(data);
 
         for (Item item : streams) {
@@ -103,7 +64,7 @@ public class SearchService {
 
     private List<Item> searchClips(String gameId, int limit) throws TwitchException {
         String url = buildSearchURL(CLIP_SEARCH_URL_TEMPLATE, gameId, limit);
-        String data = searchTwitch(url);
+        String data = gameService.searchTwitch(url);
         List<Item> clips = getItemList(data);
 
         for (Item item : clips) {
@@ -115,7 +76,7 @@ public class SearchService {
 
     private List<Item> searchVideos(String gameId, int limit) throws TwitchException {
         String url = buildSearchURL(VIDEO_SEARCH_URL_TEMPLATE, gameId, limit);
-        String data = searchTwitch(url);
+        String data = gameService.searchTwitch(url);
         List<Item> videos = getItemList(data);
 
         for (Item item : videos) {
@@ -125,7 +86,7 @@ public class SearchService {
         return videos;
     }
 
-    private List<Item> searchByType(String gameId, ItemType type, int limit) throws TwitchException {
+    protected List<Item> searchByType(String gameId, ItemType type, int limit) throws TwitchException {
         List<Item> items = Collections.emptyList();
 
         switch (type) {
@@ -157,4 +118,3 @@ public class SearchService {
         return itemMap;
     }
 }
-
